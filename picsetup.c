@@ -20,9 +20,16 @@ void configureports(){
     TRISAbits.TRISA5 = 1; //RA5=TSOP Data as Input
     
     
-    //Setup Timer2
-    //T2CON = 0b00001100;  //Enable Timer2 with Postscaler=1:2 and Prescaler=1 = ca. 2kHz
-
+    //Setup Timer0  //Internal clock, prescaler 1:128
+    TMR0=0; //init the timer
+    T0IE=0;//not TMR0 Interrupt
+    T0CS=0; //use internal clock
+    T0SE=0; // edge select Increment on low-to-high transition on T0CKI pin
+    PSA=0; //Prescaler is assigned to the Timer0 module
+    PS2=1; //Prescaler set to 1:128
+    PS1=1;
+    PS0=0;
+    
     //Init SPI
     SSPEN = 0;           //Turn off SPI to make it configurable
     SSPSTAT= 0b01000000; //SMP=0, CKE=1,
@@ -43,7 +50,6 @@ void configureports(){
     RABIE = 1;            //Enable Port-A/B-Change Interrupts
     PEIE = 0;             //Peripheral Interrupts disabled
     INTE = 0;             //External Interrupt disabled
-    INTEDG = 1;           //Interrupt should occur on rising edge
 
     DISPLAY_SLAVE_SELECT = 0;
     LED = 0;

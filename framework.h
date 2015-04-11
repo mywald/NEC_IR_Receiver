@@ -17,7 +17,6 @@ typedef unsigned char  uint8;
 typedef unsigned int uint16;
 typedef unsigned long uint32;
 
-
 /******************************************************************************/
 /* Tools                                                                      */
 /******************************************************************************/
@@ -31,6 +30,5 @@ void displayByteOnLED(uchar answer);
 uchar EEread(uchar address);
 
 void EEwrite(uchar address, uchar value);
-
 
 #endif //FRAMEWORK_H

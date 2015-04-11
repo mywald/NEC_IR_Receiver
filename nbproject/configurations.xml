@@ -7,6 +7,7 @@
       <itemPath>framework.h</itemPath>
       <itemPath>sevensegment.h</itemPath>
       <itemPath>picsetup.h</itemPath>
+      <itemPath>rc5.h</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"

@@ -11,8 +11,6 @@ void delayms(uint ms){
     }
 }
 
-
-
 void fastBlink(){
    LED = 1;
    delayms(50);

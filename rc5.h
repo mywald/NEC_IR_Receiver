@@ -5,42 +5,15 @@
  *    AUTHOR:      Christian Stadler
  *
  *    DESCRIPTION: RC5 decoder driver
- *
- ******************************************************************************/
-
-/*** HISTORY OF CHANGE *********************************************************
- *
- *    $Log: /pic/_drv/rc5.h $
  * 
- * 8     19.10.11 21:32 Stadler
- * - added Microchip C18 compiler support
- * 
- * 7     16.10.11 20:18 Stadler
- * - code cleanup
- * 
- * 6     3.08.11 17:48 Stadler
- * - made min/max bit times configurable by user
- * 
- * 5     27.07.11 17:24 Stadler
- * - updated comments
- * 
- * 4     26.07.11 23:49 Stadler
- * - updated timeout handling
- * 
- * 3     26.07.11 22:21 Stadler
- * - added interfaces to get RC5 command and RC5 device address
- * - made timer ticks and timer get function configurable by user 
- * - documented the code
- * 
- * 2     26.07.11 20:47 Stadler
- * - only report new RC5 code received if RC5 code changed with respect to
- * previous received code
+ *    Adapted for this project by Philip Maiwald. 
+ *    Original file to be found at:
+ *    http://www.picprojects.net/rc5_decoder/index.html
  *
  ******************************************************************************/
  
-/* unified data type definitions */
 #include "framework.h"
-
+#include "picsetup.h"
 
 /*****************************************************************************/
 /* DRIVER CONFIGURATION                                                      */
@@ -61,16 +34,7 @@
 /*****************************************************************************/
 
 
-
 /* === C18 compiler specific =============================================== */
-/* Note: This driver was written for CCS C compiler. The following macos     */
-/*       are required to compile this driver fo CCS C compiler.              */
-#if defined(__18CXX)
-
-/* For C18 compiler the pin configuration must be provided by a config       */
-/* header file. This header file must define the #define mentioned in the    */
-/* driver configuration information above.                                   */
-#include "config.h"
 
 #ifndef FALSE
 #define FALSE    0
@@ -93,9 +57,7 @@
 /* input pin macro */
 #define input(pin)            (pin)
 
-#endif /* #if defined(__18CXX) */
 /* === End C18 compiler specific =========================================== */
-
 
 
 /* pin where RC5 signal is connected needs to be configured in RC5_DATA_PIN */
@@ -110,8 +72,8 @@
 #endif
 
 /* function to get current timer value needs to be configured in RC5_GetTimer() */
-#ifndef RC5_GetTimer()
-#error RC5_GetTimer() not defined!
+#ifndef RC5_TIMER
+#error RC5_TIMER not defined!
 #endif
 
 
@@ -158,6 +120,11 @@
 static uint16 rc5_code = 0;
 static uint8 rc5_timeout_timer = 0; /* timeout timer, unit [ms] */
 static bool rc5_ready = FALSE;
+static uint16 rc5_code_tmp = 0;
+static uint8 rc5_pos = 13;
+static bool rc5_wait_start = TRUE;
+static bool rc5_bit_state = RC5_BIT_STATE_FULL;
+static bool rc5_pin_old = TRUE;
 
 
 /*****************************************************************************/
@@ -241,7 +208,7 @@ void RC5_TimeoutIncrement(void)
     uint8 timer;
     
     /* get current timer value */
-    timer = RC5_GetTimer();
+    timer = RC5_TIMER;
     
     /* disable interrupts since rc5_timeout_timer is also read and written to in ISR */
     disable_interrupts(GLOBAL);
@@ -268,24 +235,18 @@ void RC5_TimeoutIncrement(void)
 /*****************************************************************************/
 void RC5_InterruptHandler(void)
 {
-    static uint8 rc5_timer = 0;
-    static uint8 rc5_pos = 13;
-    static uint16 rc5_code_tmp = 0;
-    static bool rc5_wait_start = TRUE;
-    static bool rc5_bit_state = RC5_BIT_STATE_FULL;
-    static bool rc5_pin_old = TRUE;
     bool rc5_rx_last = FALSE;
     bool rc5_pin;
     uint8 tdiff;
     
     /* get RC5 pin status */
-    rc5_pin = RC5_GetPin();
+    rc5_pin = RC5_DATA_PIN;
     
     /* calculate time difference to last interrupt call */
-    tdiff = RC5_GetTimer() - rc5_timer;
+    tdiff = RC5_TIMER;
     
     /* start the RC5 timer again */
-    rc5_timer = RC5_GetTimer();
+    RC5_TIMER = 0;
     
     /* if timeout counter has expired, i.e. no RC5 signal was received for some */
     /* time, reset the state machine */
@@ -296,11 +257,9 @@ void RC5_InterruptHandler(void)
     /* reset the timeout counter */
     rc5_timeout_timer = 0;
     
-    if (rc5_wait_start != FALSE)
-    {
+    if (rc5_wait_start) {
         /* 1st half of start bit received */
-        if ((rc5_pin_old != FALSE) && (rc5_pin == FALSE))
-        {
+        if (rc5_pin_old && !rc5_pin) {
             /* leave wait state */
             rc5_wait_start = FALSE;
             /* 1st half of bit has been received */
@@ -311,11 +270,9 @@ void RC5_InterruptHandler(void)
             rc5_code_tmp = 0;
         }
     }
-    else
-    {
+    else {
         /* rising edge of RC5 signal */
-        if ((rc5_pin_old == FALSE) && (rc5_pin != FALSE))
-        {
+        if (!rc5_pin_old && rc5_pin) {
             /* one half of the bit has already been received last time and now */
             /* we got the 2nd half of the bit */
             if ((rc5_bit_state == RC5_BIT_STATE_HALF) && (tdiff >= RC5_HALF_BIT_TIME_MIN) && (tdiff <= RC5_HALF_BIT_TIME_MAX))
@@ -374,10 +331,11 @@ void RC5_InterruptHandler(void)
                 /* wait for start condition */
                 rc5_wait_start = TRUE;
             }
-        }
+        } 
         /* falling edge of RC5 signal */
-        if ((rc5_pin_old != FALSE) && (rc5_pin == FALSE))
+        else if (rc5_pin_old && !rc5_pin)
         {
+            LED = 1;
             /* one half of the bit has already been received last time and now */
             /* we got the 2nd half of the bit */
             if ((rc5_bit_state == RC5_BIT_STATE_HALF) && (tdiff >= RC5_HALF_BIT_TIME_MIN) && (tdiff <= RC5_HALF_BIT_TIME_MAX))
@@ -433,13 +391,13 @@ void RC5_InterruptHandler(void)
     /* save current pin state for edge detection */
     rc5_pin_old = rc5_pin;
  
-    /* the first two bits are the start bits and habe to be 1, else something went */
-    /* wrong and hence wait for another start condition */
+    /* the first two bits are the start bits and have to be 1, else something went */
+    /* wrong and hence wait for another start condition 
     if ( ((rc5_pos == 12) && !bit_test(rc5_code_tmp, RC5_START_BIT_1)) ||
          ((rc5_pos == 11) && !bit_test(rc5_code_tmp, RC5_START_BIT_2)) )
     {
         rc5_wait_start = TRUE;
-    }
+    }*/
 
     /* if all RC5 bits have been received */
     if ((rc5_pos == 0) && (rc5_rx_last != FALSE))
