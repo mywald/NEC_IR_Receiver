@@ -9,7 +9,7 @@
 /******************************************************************************/
 /* CHIP Setup
 /******************************************************************************/
-#define _XTAL_FREQ 2000000
+#define _XTAL_FREQ 4000000
 #pragma config FOSC = INTRCIO   // Oscillator Selection bits (RC oscillator: CLKOUT function on RA4/OSC2/CLKOUT pin, RC on RA5/OSC1/CLKIN)
 #pragma config WDTE = OFF       // Watchdog Timer Enable bit (WDT enabled)
 #pragma config PWRTE = OFF      // Power-up Timer Enable bit (PWRT disabled)
@@ -27,7 +27,6 @@
 
 /* --- RC5 driver configuration --- */
 #define RC5_DATA_PIN          RA5
-#define RC5_TICKS_PER_MS      (1000/26)     /* timer increments every 25.6us, */
 #define RC5_TIMER             TMR0
 
 

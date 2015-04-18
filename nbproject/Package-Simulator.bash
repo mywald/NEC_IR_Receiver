@@ -10,9 +10,9 @@ CND_CONF=Simulator
 CND_DISTDIR=dist
 TMPDIR=build/${CND_CONF}/${IMAGE_TYPE}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/SPI_Relais_Driver.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-OUTPUT_BASENAME=SPI_Relais_Driver.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-PACKAGE_TOP_DIR=spirelaisdriver.x/
+OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/IR_Receiver.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+OUTPUT_BASENAME=IR_Receiver.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+PACKAGE_TOP_DIR=irreceiver/
 
 # Functions
 function checkReturnCode
@@ -57,15 +57,15 @@ mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/spirelaisdriver.x/bin
+makeDirectory ${TMPDIR}/irreceiver/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f ${CND_DISTDIR}/${CND_CONF}/package/spirelaisdriver.x.tar
+rm -f ${CND_DISTDIR}/${CND_CONF}/package/irreceiver.tar
 cd ${TMPDIR}
-tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/spirelaisdriver.x.tar *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/irreceiver.tar *
 checkReturnCode
 
 # Cleanup

@@ -1,6 +1,6 @@
 #include "picsetup.h"
 
-void configureports(){
+void configureports(){    
     //Init IO
     ANSELH = 0X0;         //Disable analog Ports
     ANSEL = 0X0;          //Disable analog Ports
@@ -19,16 +19,16 @@ void configureports(){
     TRISCbits.TRISC1 = 0; //RC1=LED as Output
     TRISAbits.TRISA5 = 1; //RA5=TSOP Data as Input
     
-    
-    //Setup Timer0  //Internal clock, prescaler 1:128
-    TMR0=0; //init the timer
-    T0IE=0;//not TMR0 Interrupt
-    T0CS=0; //use internal clock
-    T0SE=0; // edge select Increment on low-to-high transition on T0CKI pin
-    PSA=0; //Prescaler is assigned to the Timer0 module
-    PS2=1; //Prescaler set to 1:128
-    PS1=1;
-    PS0=0;
+//Timer0 Registers Prescaler= 64 - TMR0 Preset = 0 - Freq = 61.04 Hz - Period = 0.016384 seconds
+T0CS = 0;  // bit 5  TMR0 Clock Source Select bit...0 = Internal Clock (CLKO) 1 = Transition on T0CKI pin
+T0SE = 0;  // bit 4 TMR0 Source Edge Select bit 0 = low/high 1 = high/low
+PSA = 0;   // bit 3  Prescaler Assignment bit...0 = Prescaler is assigned to the Timer0
+PS2 = 1;   // bits 2-0  PS2:PS0: Prescaler Rate Select bits
+PS1 = 0;
+PS0 = 1;
+
+    TMR0 = 0;  // preset for timer register
+    T0IE=0;    //disable TMR0 Interrupt
     
     //Init SPI
     SSPEN = 0;           //Turn off SPI to make it configurable

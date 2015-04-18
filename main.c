@@ -15,8 +15,13 @@ void interrupt ISR() {
    GIE=1;                //Enable interrupts again
    */
         
-   RC5_InterruptHandler();
-   RABIF=0;
+    if (RABIF) {          //Check if it is port A/B change Interrupt (= TSOP IRQ)
+       RABIF=0;
+       ir_interruptHandler();
+    } else if (T0IF) {
+       T0IF=0;
+       ir_abort(0xEE);
+    }
 }
 
 
@@ -28,21 +33,19 @@ void main(void) {
     LED = 0;
 
     GIE=1;
-
-    while(1) {
-        if (RC5_CodeReady()) {
-            LED = 1;
-            
-            uint16 rc5code = RC5_GetCode();
-                
-            RC5_GetDeviceAddr(rc5code);
-            RC5_GetToggleBit(rc5code);
-            RC5_GetCmd(rc5code);
-        }
         
-        displayChar(RC5_GetCmd(rc5_code_tmp));
+    //uint i = 0;
+    while(true) {
+
+//          uint t = TMR0;
+  //        delayms(10);
+        //LED=!LED;
+        //displayChar(0x11);
+        
+//        displayed = 1;
+  
         delayms(1000);
-        RC5_TimeoutIncrement();
+        displayChar(ir_temp_code);
     }
 }
 
