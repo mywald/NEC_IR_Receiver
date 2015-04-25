@@ -21,13 +21,7 @@
 #pragma config FCMEN = ON       // Fail-Safe Clock Monitor Enabled bit (Fail-Safe Clock Monitor is enabled)
 
 #define LED RC1
-#define TSOP_IRQ RA5
 #define DISPLAY_SLAVE_SELECT RC0
-
-
-/* --- RC5 driver configuration --- */
-#define RC5_DATA_PIN          RA5
-#define RC5_TIMER             TMR0
 
 
 void configureports();
